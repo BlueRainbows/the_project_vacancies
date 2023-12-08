@@ -61,6 +61,7 @@ class Vacancy(ABC):
 
 
 class VacancyHH(Vacancy, ABC):
+    """ Класс получает ответ с API сайта hh.ru, инициализирует атрибуты и преобразовывает их в словарь """
 
     def __init__(self, api):
         super().__init__(api)
@@ -119,6 +120,7 @@ class VacancyHH(Vacancy, ABC):
 
 
 class VacancySJ(Vacancy, ABC):
+    """ Класс получает ответ с API сайта superjob.ru, инициализирует атрибуты и преобразовывает их в словарь """
     def __init__(self, api):
         super().__init__(api)
 
@@ -173,6 +175,7 @@ class VacancySJ(Vacancy, ABC):
 
 
 class JSONSaver:
+    """ Класс сохраняет данные в json файл """
 
     def __init__(self, hh, sj):
         self.hh = hh
@@ -195,6 +198,7 @@ class JSONSaver:
 
 
 class FilterVacancy(ABC):
+    """ Абстрактный класс для классов выполняющих функции фильтрации """
 
     def __init__(self, search_query, top_n, filter_words):
         self.vacancy = None
@@ -220,6 +224,7 @@ class FilterVacancy(ABC):
 
 
 class FilterHH(FilterVacancy, ABC):
+    """ Класс выполняет функцию фильтрации для запросов сайта hh.ru """
     def __init__(self, search_query, top_n, filter_words):
         super().__init__(search_query, top_n, filter_words)
         self.vacancy = self.open_json()['hh_vacancy']
@@ -298,6 +303,7 @@ class FilterHH(FilterVacancy, ABC):
 
 
 class FilterSJ(FilterVacancy, ABC):
+    """ Класс выполняет функцию фильтрации для запросов сайта superjob.ru """
     def __init__(self, search_query, top_n, filter_words):
         super().__init__(search_query, top_n, filter_words)
         self.vacancy = self.open_json()['sj_vacancy']
