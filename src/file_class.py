@@ -171,3 +171,25 @@ class VacancySJ(Vacancy, ABC):
         except KeyError:
             print('В документе не полная информация')
 
+
+class JSONSaver:
+
+    def __init__(self, hh, sj):
+        self.hh = hh
+        self.sj = sj
+
+    def creating_json_file(self):
+        with open('./src/vacancy_file.json', 'w', encoding='utf-8') as file:
+            json.dump({
+
+                'hh_vacancy': self.hh,
+                'sj_vacancy': self.sj
+
+            }, file, ensure_ascii=False, indent=4)
+
+    def get_data(self):
+        pass
+
+    def del_data(self):
+        pass
+
