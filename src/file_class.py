@@ -18,7 +18,8 @@ class HeadHunter(GetAPI):
 
     def get_api(self):
         try:
-            response_hh = requests.get(url=self.url, headers={'User-Agent': 'bluereinbow@yandex.ru'})
+            response_hh = requests.get(url=self.url, headers={'User-Agent': 'bluereinbow@yandex.ru'},
+                                       params={'page': None, 'per_page': 100})
             if response_hh.status_code == 200:
                 return response_hh.json()
         except requests.RequestException as error:
@@ -32,7 +33,8 @@ class SuperJob(GetAPI):
 
     def get_api(self):
         try:
-            response_sj = requests.get(url=self.url, headers={'X-Api-App-Id': self.api_key})
+            response_sj = requests.get(url=self.url, headers={'X-Api-App-Id': self.api_key},
+                                       params={'page': None, 'count': 100})
             if response_sj.status_code == 200:
                 return response_sj.json()
         except requests.RequestException as error:
