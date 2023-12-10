@@ -170,13 +170,14 @@ class VacancySJ(Vacancy, ABC):
 
 
 class JSONSaver:
-    """ Класс сохраняет данные в json файл """
+    """ Класс для работы с json файлом """
 
     def __init__(self, hh, sj):
         self.hh = hh
         self.sj = sj
 
     def creating_json_file(self):
+        """ Функция сохраняет объекты в json файл """
         with open('./src/vacancy_file.json', 'w', encoding='utf-8') as file:
             json.dump({
 
@@ -186,6 +187,7 @@ class JSONSaver:
             }, file, ensure_ascii=False, indent=4)
 
     def del_data(self):
+        """ Функция удаляет файл"""
         os.remove('./src/vacancy_file.json')
 
 
@@ -222,11 +224,13 @@ class FilterHH(FilterVacancy, ABC):
         self.vacancy = self.open_json()['hh_vacancy']
 
     def open_json(self):
+        """ Функция открывает json файл для работы """
         with open('./src/vacancy_file.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
         return data
 
     def filter_vacancy_name(self):
+        """ Функция фильтрует данные по названию вакансии """
         list_string_profession = []
         for i in range(len(self.vacancy)):
             if self.search_query in self.vacancy[i]['name_vacancy'].lower():
@@ -240,6 +244,7 @@ class FilterHH(FilterVacancy, ABC):
         return list_string_profession
 
     def filter_top_salary(self):
+        """ Функция фильтрует данные по зарплате от самой высокой, до самой низкой """
         salary_full = []
         max_salary = []
         salary_string = ''
@@ -279,6 +284,7 @@ class FilterHH(FilterVacancy, ABC):
         return len(self.filter_top_salary())
 
     def filter_the_key_words(self):
+        """ Функция фильтрует данные по ключевым словам """
         list_the_key_words = []
         for i in range(len(self.vacancy)):
             if ' ' in self.filter_words:
@@ -305,11 +311,13 @@ class FilterSJ(FilterVacancy, ABC):
         self.vacancy = self.open_json()['sj_vacancy']
 
     def open_json(self):
+        """ Функция открывает json файл для работы """
         with open('./src/vacancy_file.json', 'r', encoding='utf-8') as file:
             data = json.load(file)
         return data
 
     def filter_vacancy_name(self):
+        """ Функция фильтрует данные по названию вакансии """
         list_string_profession = []
         for i in range(len(self.vacancy)):
             if self.search_query in self.vacancy[i]['name_vacancy'].lower():
@@ -323,6 +331,7 @@ class FilterSJ(FilterVacancy, ABC):
         return list_string_profession
 
     def filter_top_salary(self):
+        """ Функция фильтрует данные по зарплате от самой высокой, до самой низкой """
         salary_full = []
         max_salary = []
         salary_string = ''
@@ -362,6 +371,7 @@ class FilterSJ(FilterVacancy, ABC):
         return len(self.filter_top_salary())
 
     def filter_the_key_words(self):
+        """ Функция фильтрует данные по ключевым словам """
         list_the_key_words = []
         if ' ' in self.filter_words:
             splitting_words = self.filter_words.split(' ')
