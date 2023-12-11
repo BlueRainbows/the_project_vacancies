@@ -72,32 +72,32 @@ class VacancyHH(Vacancy, ABC):
         if self.api is None:
             raise Exception('Ошибка в чтении документа')
         try:
-            for len_item in range(len(self.api['items'])):
-                self.name_vacancy = self.api['items'][len_item]['name']
-                if self.api['items'][len_item]['salary'] is None:
+            for item in self.api['items']:
+                self.name_vacancy = item['name']
+                if item['salary'] is None:
                     self.salary_vacancy = 'Зарплата не указана'
-                elif self.api['items'][len_item]['salary']['from'] is None:
-                    salary = 'До ' + str(self.api['items'][len_item]['salary']['to'])
+                elif item['salary']['from'] is None:
+                    salary = 'До ' + str(item['salary']['to'])
                     self.salary_vacancy = salary
-                elif self.api['items'][len_item]['salary']['from'] is not None and \
-                        self.api['items'][len_item]['salary']['to'] is not None:
-                    salary = 'От ' + str(self.api['items'][len_item]['salary']['from']) + \
-                             ' до ' + str(self.api['items'][len_item]['salary']['to'])
+                elif item['salary']['from'] is not None and \
+                        item['salary']['to'] is not None:
+                    salary = 'От ' + str(item['salary']['from']) + \
+                             ' до ' + str(item['salary']['to'])
                     self.salary_vacancy = salary
                 else:
-                    salary = 'От ' + str(self.api['items'][len_item]['salary']['from'])
+                    salary = 'От ' + str(item['salary']['from'])
                     self.salary_vacancy = salary
-                if self.api['items'][len_item]['address'] is None:
+                if item['address'] is None or 'null':
                     self.address_vacancy = 'Адрес не указан'
                 else:
-                    self.address_vacancy = self.api['items'][len_item]['address']['raw']
-                self.url_vacancy = self.api['items'][len_item]['alternate_url']
-                if self.api['items'][len_item]['snippet']['requirement'] is None:
+                    self.address_vacancy = item['address']['raw']
+                self.url_vacancy = item['alternate_url']
+                if item['snippet']['requirement'] is None:
                     self.requirement_vacancy = 'Требования к сотруднику не указаны'
                 else:
-                    self.requirement_vacancy = self.api['items'][len_item]['snippet']['requirement']
-                self.schedule_vacancy = self.api['items'][len_item]['schedule']['name']
-                self.professional_roles = self.api['items'][len_item]['professional_roles'][0]['name']
+                    self.requirement_vacancy = item['snippet']['requirement']
+                self.schedule_vacancy = item['schedule']['name']
+                self.professional_roles = item['professional_roles'][0]['name']
                 dict_vacancy = {
                     'name_vacancy': self.name_vacancy,
                     'salary_vacancy': self.salary_vacancy,
@@ -123,35 +123,35 @@ class VacancySJ(Vacancy, ABC):
 
     def get_vacancy(self):
         if self.api is None:
-            raise Exception('Ошибка в чтении документа')
+            return []
         try:
-            for len_item in range(len(self.api['objects'])):
-                if self.api['objects'][len_item]['payment_from'] == 0:
-                    salary = 'До ' + str(self.api['objects'][len_item]['payment_to'])
+            for objects in self.api['objects']:
+                if objects['payment_from'] == 0:
+                    salary = 'До ' + str(objects['payment_to'])
                     self.salary_vacancy = salary
-                elif self.api['objects'][len_item]['payment_to'] == 0:
-                    salary = 'От ' + str(self.api['objects'][len_item]['payment_from'])
+                elif objects['payment_to'] == 0:
+                    salary = 'От ' + str(objects['payment_from'])
                     self.salary_vacancy = salary
-                elif self.api['objects'][len_item]['payment_from'] and \
-                        self.api['objects'][len_item]['payment_from'] != 0:
-                    salary = 'От ' + str(self.api['objects'][len_item]['payment_from']) + \
-                             ' до ' + str(self.api['objects'][len_item]['payment_to'])
+                elif objects['payment_from'] and \
+                        objects['payment_from'] != 0:
+                    salary = 'От ' + str(objects['payment_from']) + \
+                             ' до ' + str(objects['payment_to'])
                     self.salary_vacancy = salary
-                if self.api['objects'][len_item]['address'] is None:
+                if objects['address'] is None:
                     self.address_vacancy = 'Адрес не указан'
                 else:
-                    self.address_vacancy = self.api['objects'][len_item]['address']
-                self.name_vacancy = self.api['objects'][len_item]['profession']
-                if self.api['objects'][len_item]['candidat'] is None:
+                    self.address_vacancy = objects['address']
+                self.name_vacancy = objects['profession']
+                if objects['candidat'] is None:
                     self.requirement_vacancy = 'Информация для кандидата не указана'
                 else:
-                    raw_string = self.api['objects'][len_item]['candidat']
+                    raw_string = objects['candidat']
                     string = raw_string.replace('\n', ' ')
                     string = string.replace('\n·', ' ')
                     self.requirement_vacancy = string
-                self.schedule_vacancy = self.api['objects'][len_item]['type_of_work']['title']
-                self.url_vacancy = self.api['objects'][len_item]['link']
-                self.professional_roles = self.api['objects'][len_item]['catalogues']
+                self.schedule_vacancy = objects['type_of_work']['title']
+                self.url_vacancy = objects['link']
+                self.professional_roles = objects['catalogues']
                 dict_vacancy = {
                     'name_vacancy': self.name_vacancy,
                     'salary_vacancy': self.salary_vacancy,
@@ -178,7 +178,8 @@ class JSONSaver:
 
     def creating_json_file(self):
         """ Функция сохраняет объекты в json файл """
-        with open('./src/vacancy_file.json', 'w', encoding='utf-8') as file:
+        paths = os.path.join('src/vacancy_file.json')
+        with open(paths, 'w', encoding='utf-8') as file:
             json.dump({
 
                 'hh_vacancy': self.hh,
@@ -188,7 +189,8 @@ class JSONSaver:
 
     def del_data(self):
         """ Функция удаляет файл"""
-        os.remove('./src/vacancy_file.json')
+        paths = os.path.join('src/vacancy_file.json')
+        os.remove(paths)
 
 
 class FilterVacancy(ABC):
@@ -225,21 +227,22 @@ class FilterHH(FilterVacancy, ABC):
 
     def open_json(self):
         """ Функция открывает json файл для работы """
-        with open('./src/vacancy_file.json', 'r', encoding='utf-8') as file:
+        paths = os.path.join('src/vacancy_file.json')
+        with open(paths, 'r', encoding='utf-8') as file:
             data = json.load(file)
         return data
 
     def filter_vacancy_name(self):
         """ Функция фильтрует данные по названию вакансии """
         list_string_profession = []
-        for i in range(len(self.vacancy)):
-            if self.search_query in self.vacancy[i]['name_vacancy'].lower():
-                string_profession = '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                    self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                    self.vacancy[i]['address_vacancy'] + '\n' + \
-                                    self.vacancy[i]['url_vacancy'] + '\n' + \
-                                    self.vacancy[i]['requirement_vacancy'][:100] + '...' + '\n' + \
-                                    self.vacancy[i]['schedule_vacancy'] + '\n' + '\n'
+        for vacancy in self.vacancy:
+            if self.search_query in vacancy['name_vacancy'].lower():
+                string_profession = '\n' + vacancy['name_vacancy'] + '\n' + \
+                                    vacancy['salary_vacancy'] + '\n' + \
+                                    vacancy['address_vacancy'] + '\n' + \
+                                    vacancy['url_vacancy'] + '\n' + \
+                                    vacancy['requirement_vacancy'][:100] + '...' + '\n' + \
+                                    vacancy['schedule_vacancy'] + '\n' + '\n'
                 list_string_profession.append(string_profession)
         return list_string_profession
 
@@ -248,35 +251,35 @@ class FilterHH(FilterVacancy, ABC):
         salary_full = []
         max_salary = []
         salary_string = ''
-        for i in range(len(self.vacancy)):
-            if 'От' and 'до' in self.vacancy[i]['salary_vacancy']:
-                splitting = self.vacancy[i]['salary_vacancy'].split(' ')
+        for vacancy in self.vacancy:
+            if 'От' and 'до' in vacancy['salary_vacancy']:
+                splitting = vacancy['salary_vacancy'].split(' ')
                 max_salary.append(int(splitting[-1]))
-            elif 'До' in self.vacancy[i]['salary_vacancy']:
-                max_salary.append(int(self.vacancy[i]['salary_vacancy'][3:]))
-            elif 'От' in self.vacancy[i]['salary_vacancy']:
-                max_salary.append(int(self.vacancy[i]['salary_vacancy'][3:]))
+            elif 'До' in vacancy['salary_vacancy']:
+                max_salary.append(int(vacancy['salary_vacancy'][3:]))
+            elif 'От' in vacancy['salary_vacancy']:
+                max_salary.append(int(vacancy['salary_vacancy'][3:]))
         set_max_salary = set(max_salary)
         max_salary.clear()
         for sets in set_max_salary:
             max_salary.append(sets)
         max_salary.sort(reverse=True)
         for salary in max_salary:
-            for i in range(len(self.vacancy)):
-                if self.vacancy[i]['salary_vacancy'] == 'Зарплата не указана':
+            for vacancy in self.vacancy:
+                if vacancy['salary_vacancy'] == 'Зарплата не указана':
                     continue
-                splitting = self.vacancy[i]['salary_vacancy'].split(' ')
+                splitting = vacancy['salary_vacancy'].split(' ')
                 if len(splitting) != 2:
                     if str(salary) == splitting[-1]:
-                        salary_string += '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                         self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                         self.vacancy[i]['url_vacancy'] + '\n'
+                        salary_string += '\n' + vacancy['name_vacancy'] + '\n' + \
+                                         vacancy['salary_vacancy'] + '\n' + \
+                                         vacancy['url_vacancy'] + '\n'
                         salary_full.append(salary_string)
                 else:
                     if str(salary) == splitting[-1]:
-                        salary_string += '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                         self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                         self.vacancy[i]['url_vacancy'] + '\n'
+                        salary_string += '\n' + vacancy['name_vacancy'] + '\n' + \
+                                         vacancy['salary_vacancy'] + '\n' + \
+                                         vacancy['url_vacancy'] + '\n'
                         salary_full.append(salary_string)
         return salary_full
 
@@ -286,19 +289,19 @@ class FilterHH(FilterVacancy, ABC):
     def filter_the_key_words(self):
         """ Функция фильтрует данные по ключевым словам """
         list_the_key_words = []
-        for i in range(len(self.vacancy)):
+        for vacancy in self.vacancy:
             if ' ' in self.filter_words:
                 splitting_words = self.filter_words.split(' ')
             else:
                 splitting_words = self.filter_words.split(',')
             for spl in splitting_words:
-                if spl.lower() in self.vacancy[i]['professional_roles'].lower():
-                    string_profession = '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                        self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                        self.vacancy[i]['address_vacancy'] + '\n' + \
-                                        self.vacancy[i]['url_vacancy'] + '\n' + \
-                                        self.vacancy[i]['requirement_vacancy'] + '\n' + \
-                                        self.vacancy[i]['schedule_vacancy'] + '\n' + '\n'
+                if spl.lower() in vacancy['professional_roles'].lower():
+                    string_profession = '\n' + vacancy['name_vacancy'] + '\n' + \
+                                        vacancy['salary_vacancy'] + '\n' + \
+                                        vacancy['address_vacancy'] + '\n' + \
+                                        vacancy['url_vacancy'] + '\n' + \
+                                        vacancy['requirement_vacancy'] + '\n' + \
+                                        vacancy['schedule_vacancy'] + '\n' + '\n'
                     list_the_key_words.append(string_profession)
         return list_the_key_words
 
@@ -312,21 +315,22 @@ class FilterSJ(FilterVacancy, ABC):
 
     def open_json(self):
         """ Функция открывает json файл для работы """
-        with open('./src/vacancy_file.json', 'r', encoding='utf-8') as file:
+        paths = os.path.join('src/vacancy_file.json')
+        with open(paths, 'r', encoding='utf-8') as file:
             data = json.load(file)
         return data
 
     def filter_vacancy_name(self):
         """ Функция фильтрует данные по названию вакансии """
         list_string_profession = []
-        for i in range(len(self.vacancy)):
-            if self.search_query in self.vacancy[i]['name_vacancy'].lower():
-                string_profession = '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                    self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                    self.vacancy[i]['address_vacancy'] + '\n' + \
-                                    self.vacancy[i]['url_vacancy'] + '\n' + \
-                                    self.vacancy[i]['requirement_vacancy'][:100] + '...' + '\n' + \
-                                    self.vacancy[i]['schedule_vacancy'] + '\n' + '\n'
+        for vacancy in self.vacancy:
+            if self.search_query in vacancy['name_vacancy'].lower():
+                string_profession = '\n' + vacancy['name_vacancy'] + '\n' + \
+                                    vacancy['salary_vacancy'] + '\n' + \
+                                    vacancy['address_vacancy'] + '\n' + \
+                                    vacancy['url_vacancy'] + '\n' + \
+                                    vacancy['requirement_vacancy'][:100] + '...' + '\n' + \
+                                    vacancy['schedule_vacancy'] + '\n' + '\n'
                 list_string_profession.append(string_profession)
         return list_string_profession
 
@@ -335,35 +339,35 @@ class FilterSJ(FilterVacancy, ABC):
         salary_full = []
         max_salary = []
         salary_string = ''
-        for i in range(len(self.vacancy)):
-            if 'От' and 'до' in self.vacancy[i]['salary_vacancy']:
-                splitting = self.vacancy[i]['salary_vacancy'].split(' ')
+        for vacancy in self.vacancy:
+            if 'От' and 'до' in vacancy['salary_vacancy']:
+                splitting = vacancy['salary_vacancy'].split(' ')
                 max_salary.append(int(splitting[-1]))
-            elif 'До' in self.vacancy[i]['salary_vacancy']:
-                max_salary.append(int(self.vacancy[i]['salary_vacancy'][3:]))
-            elif 'От' in self.vacancy[i]['salary_vacancy']:
-                max_salary.append(int(self.vacancy[i]['salary_vacancy'][3:]))
+            elif 'До' in vacancy['salary_vacancy']:
+                max_salary.append(int(vacancy['salary_vacancy'][3:]))
+            elif 'От' in vacancy['salary_vacancy']:
+                max_salary.append(int(vacancy['salary_vacancy'][3:]))
         set_max_salary = set(max_salary)
         max_salary.clear()
         for sets in set_max_salary:
             max_salary.append(sets)
         max_salary.sort(reverse=True)
         for salary in max_salary:
-            for i in range(len(self.vacancy)):
-                if self.vacancy[i]['salary_vacancy'] == 'Зарплата не указана':
+            for vacancy in self.vacancy:
+                if vacancy['salary_vacancy'] == 'Зарплата не указана':
                     continue
-                splitting = self.vacancy[i]['salary_vacancy'].split(' ')
+                splitting = vacancy['salary_vacancy'].split(' ')
                 if len(splitting) != 2:
                     if str(salary) == splitting[-1]:
-                        salary_string += '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                         self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                         self.vacancy[i]['url_vacancy'] + '\n'
+                        salary_string += '\n' + vacancy['name_vacancy'] + '\n' + \
+                                         vacancy['salary_vacancy'] + '\n' + \
+                                         vacancy['url_vacancy'] + '\n'
                         salary_full.append(salary_string)
                 else:
                     if str(salary) == splitting[-1]:
-                        salary_string += '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                         self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                         self.vacancy[i]['url_vacancy'] + '\n'
+                        salary_string += '\n' + vacancy['name_vacancy'] + '\n' + \
+                                         vacancy['salary_vacancy'] + '\n' + \
+                                         vacancy['url_vacancy'] + '\n'
                         salary_full.append(salary_string)
         return salary_full
 
@@ -378,26 +382,26 @@ class FilterSJ(FilterVacancy, ABC):
         else:
             splitting_words = self.filter_words.split(',')
         for spl in splitting_words:
-            for i in range(len(self.vacancy)):
-                for professional in self.vacancy[i]['professional_roles']:
+            for vacancy in self.vacancy:
+                for professional in vacancy['professional_roles']:
                     prof_title = professional['title'].lower()
                     if spl.lower() in prof_title:
-                        string_profession = '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                            self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                            self.vacancy[i]['address_vacancy'] + '\n' + \
-                                            self.vacancy[i]['url_vacancy'] + '\n' + \
-                                            self.vacancy[i]['requirement_vacancy'][:100] + '...' + '\n' + \
-                                            self.vacancy[i]['schedule_vacancy'] + '\n' + '\n'
+                        string_profession = '\n' + vacancy['name_vacancy'] + '\n' + \
+                                            vacancy['salary_vacancy'] + '\n' + \
+                                            vacancy['address_vacancy'] + '\n' + \
+                                            vacancy['url_vacancy'] + '\n' + \
+                                            vacancy['requirement_vacancy'][:100] + '...' + '\n' + \
+                                            vacancy['schedule_vacancy'] + '\n' + '\n'
                         list_the_key_words.append(string_profession)
                     prof_positions = professional['positions']
                     for prof in prof_positions:
                         professional_titles = prof['title'].lower()
                         if spl.lower() in professional_titles:
-                            string_profession = '\n' + self.vacancy[i]['name_vacancy'] + '\n' + \
-                                                self.vacancy[i]['salary_vacancy'] + '\n' + \
-                                                self.vacancy[i]['address_vacancy'] + '\n' + \
-                                                self.vacancy[i]['url_vacancy'] + '\n' + \
-                                                self.vacancy[i]['requirement_vacancy'][:100] + '...' + '\n' + \
-                                                self.vacancy[i]['schedule_vacancy'] + '\n' + '\n'
+                            string_profession = '\n' + vacancy['name_vacancy'] + '\n' + \
+                                                vacancy['salary_vacancy'] + '\n' + \
+                                                vacancy['address_vacancy'] + '\n' + \
+                                                vacancy['url_vacancy'] + '\n' + \
+                                                vacancy['requirement_vacancy'][:100] + '...' + '\n' + \
+                                                vacancy['schedule_vacancy'] + '\n' + '\n'
                             list_the_key_words.append(string_profession)
         return list_the_key_words

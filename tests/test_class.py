@@ -44,12 +44,8 @@ def test_VacancySJ():
     sj = SuperJob()
     sj_vacancy = VacancySJ(sj.get_api())
     assert type(sj_vacancy.get_vacancy()) == list
-    with pytest.raises(Exception):
-        sj.url = 'api.superjob.ru'
-        sj_vacancy = VacancySJ(sj.get_api())
-        sj_vacancy.get_vacancy()
     sj.url = 'https://api.hh.ru/vacancies'
     dels_value = sj.get_api()
     del dels_value['items'][0]['name']
     sj_vacancy = VacancySJ(dels_value)
-    assert sj_vacancy.name_vacancy == None
+    assert sj_vacancy.name_vacancy is None

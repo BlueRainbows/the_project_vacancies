@@ -7,12 +7,12 @@ if __name__ == '__main__':
         api_sj = SuperJob()
 
         vacancy_hh = VacancyHH(api_hh.get_api())
-        vacancy_hh.get_vacancy()
+        hh_vacancies = vacancy_hh.get_vacancy()
 
         vacancy_sj = VacancySJ(api_sj.get_api())
-        vacancy_sj.get_vacancy()
+        sj_vacancies = vacancy_sj.get_vacancy()
 
-        saver = JSONSaver(vacancy_hh.get_vacancy(), vacancy_sj.get_vacancy())
+        saver = JSONSaver(hh_vacancies, sj_vacancies)
         saver.creating_json_file()
         while True:
             try:
@@ -24,13 +24,14 @@ if __name__ == '__main__':
                 print('\n')
                 if platform == 1:
                     filter_vacancy_hh = FilterHH(search_query, filter_words)
-                    if filter_vacancy_hh.filter_vacancy_name() == []:
+                    vacancies = filter_vacancy_hh.filter_vacancy_name()
+                    if not vacancies:
                         print(
                             'Вакансий по вашему запросу не найдено на данной платформе. \n'
                             'Вы можете начать поиск других вакансий или поискать вакансии на другой платформе \n'
                         )
                     else:
-                        for filter_vacancy_name in filter_vacancy_hh.filter_vacancy_name():
+                        for filter_vacancy_name in vacancies:
                             print(f'Ответ по поисковому запросу: {search_query} \n {filter_vacancy_name}')
                     if len(filter_vacancy_hh) < top_n:
                         print('\nКолличество введенных вакансий для вывода топа по зарплате не может превышать '
@@ -43,26 +44,28 @@ if __name__ == '__main__':
                             string = 'Топ ' + str(top_n) + ':\n' + filtr
                         print(string)
                     if ',' in filter_words:
-                        if filter_vacancy_hh.filter_the_key_words() == []:
+                        if not vacancies:
                             print('\nВакансий по заданным параметрам не обнаружено \n')
-                        for filter_vacancy_the_key_words in filter_vacancy_hh.filter_the_key_words():
+                        for filter_vacancy_the_key_words in vacancies:
                             print(f'Вакансии найденые по заданным параметрам: \n {filter_vacancy_the_key_words}')
                     elif ' ' in filter_words:
-                        if filter_vacancy_hh.filter_the_key_words() == []:
+                        if not vacancies:
                             print('\nВакансий по заданным параметрам не обнаружено \n')
-                        for filter_vacancy_the_key_words in filter_vacancy_hh.filter_the_key_words():
+                        for filter_vacancy_the_key_words in vacancies:
                             print(f'Вакансии найденые по заданным параметрам: \n {filter_vacancy_the_key_words}')
                     else:
                         print('\nВведите ключевые слова для фильтрации вакансий через запятую или пробел\n')
                 elif platform == 2:
                     filter_vacancy_sj = FilterSJ(search_query, filter_words)
-                    if filter_vacancy_sj.filter_vacancy_name() == []:
+                    vacancies = filter_vacancy_sj.filter_vacancy_name()
+                    if not vacancies:
                         print(
                             'Вакансий по вашему запросу не найдено на данной платформе. \n'
                             'Вы можете начать поиск других вакансий или поискать вакансии на другой платформе \n'
                         )
                     else:
-                        for filter_vacancy_name in filter_vacancy_sj.filter_vacancy_name():
+                        for filter_vacancy_name in vacancies:
+                            print(f'Ответ по поисковому запросу: {search_query} \n {filter_vacancy_name}')
                             print(f'Ответ по поисковому запросу: {search_query} \n {filter_vacancy_name}')
                     if len(filter_vacancy_sj) < top_n:
                         print(
@@ -76,14 +79,14 @@ if __name__ == '__main__':
                             string = 'Топ ' + str(top_n) + ':\n' + filtr
                         print(string)
                     if ',' in filter_words:
-                        if filter_vacancy_sj.filter_the_key_words() == []:
+                        if not vacancies:
                             print('\nВакансий по заданным параметрам не обнаружено \n')
-                        for filter_vacancy_the_key_words in filter_vacancy_sj.filter_the_key_words():
+                        for filter_vacancy_the_key_words in vacancies:
                             print(f'Вакансии найденые по заданным параметрам: \n {filter_vacancy_the_key_words}')
                     elif ' ' in filter_words:
-                        if filter_vacancy_sj.filter_the_key_words() == []:
+                        if not vacancies:
                             print('\nВакансий по заданным параметрам не обнаружено \n')
-                        for filter_vacancy_the_key_words in filter_vacancy_sj.filter_the_key_words():
+                        for filter_vacancy_the_key_words in vacancies:
                             print(f'Вакансии найденые по заданным параметрам: \n {filter_vacancy_the_key_words}')
                     else:
                         print('\nВведите ключевые слова для фильтрации вакансий через запятую или пробел\n')
